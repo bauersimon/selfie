@@ -1125,7 +1125,7 @@ uint64_t EXCEPTION_UNKNOWNINSTRUCTION = 7;
 uint64_t* EXCEPTIONS; // strings representing exceptions
 
 // TODO: catch tracelimit exception
-uint64_t maxTraceLength = 10000000;
+uint64_t maxTraceLength = 4294967296; // ~ 160 GB
 
 uint64_t debug_exception = 0;
 
@@ -5523,13 +5523,13 @@ uint64_t symbolic_read(uint64_t* context, uint64_t fd, uint64_t vbuffer, uint64_
   // read into trace
   // ==== test purposes ====
 
-  // r = signExtend(read(fd, valuesLower + tc, bytesToRead), SYSCALL_BITWIDTH);
-  // setUpper(*(valuesLower + tc));
-  // storeVirtualMemory(getPT(context), vbuffer, tc);
+  r = signExtend(read(fd, valuesLower + tc, bytesToRead), SYSCALL_BITWIDTH);
+  setUpper(*(valuesLower + tc));
+  storeVirtualMemory(getPT(context), vbuffer, tc);
 
-  // incrementTc();
+  incrementTc();
 
-  // return r;
+  return r;
 
   // =======================
 
