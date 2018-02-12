@@ -1125,8 +1125,7 @@ uint64_t EXCEPTION_UNKNOWNINSTRUCTION = 7;
 uint64_t* EXCEPTIONS; // strings representing exceptions
 
 // TODO: catch tracelimit exception
-uint64_t maxTraceLength = 2415919104; // ~ 90 GB
-// uint64_t maxTraceLength = 2621440; // ~ 100 MB
+uint64_t maxTraceLength = 2621440; // ~ 100 MB
 
 uint64_t debug_exception = 0;
 
@@ -1194,6 +1193,8 @@ void initInterpreter() {
   *(EXCEPTIONS + EXCEPTION_DIVISIONBYZERO)     = (uint64_t) "division by zero";
   *(EXCEPTIONS + EXCEPTION_TRACELIMIT)         = (uint64_t) "tracelimit reached";
   *(EXCEPTIONS + EXCEPTION_UNKNOWNINSTRUCTION) = (uint64_t) "unknown instruction";
+
+  if(isBootLevelZero) maxTraceLength = 2415919104; // 90GB
 
   pcs    = zalloc(maxTraceLength * SIZEOFUINT64);
   tcs    = zalloc(maxTraceLength * SIZEOFUINT64);
