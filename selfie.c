@@ -1194,7 +1194,7 @@ void initInterpreter() {
   *(EXCEPTIONS + EXCEPTION_TRACELIMIT)         = (uint64_t) "tracelimit reached";
   *(EXCEPTIONS + EXCEPTION_UNKNOWNINSTRUCTION) = (uint64_t) "unknown instruction";
 
-  if(isBootLevelZero) maxTraceLength = 2415919104; // 90GB
+  if(isBootLevelZero()) maxTraceLength = 2415919104; // 90GB
 
   pcs    = zalloc(maxTraceLength * SIZEOFUINT64);
   tcs    = zalloc(maxTraceLength * SIZEOFUINT64);
