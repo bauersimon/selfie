@@ -1182,6 +1182,8 @@ uint64_t* storesPerInstruction = (uint64_t*) 0; // number of executed stores per
 
 // ------------------------- INITIALIZATION ------------------------
 
+uint64_t isBootLevelZero();
+
 void initInterpreter() {
   EXCEPTIONS = smalloc((EXCEPTION_UNKNOWNINSTRUCTION + 1) * SIZEOFUINT64STAR);
 
@@ -1372,8 +1374,6 @@ uint64_t up_loadString(uint64_t* context, uint64_t* s, uint64_t SP);
 void     up_loadArguments(uint64_t* context, uint64_t argc, uint64_t* argv);
 
 void mapUnmappedPages(uint64_t* context);
-
-uint64_t isBootLevelZero();
 
 uint64_t handleDivisionByZero();
 uint64_t handleSystemCalls(uint64_t* context);
