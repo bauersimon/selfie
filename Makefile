@@ -33,16 +33,16 @@ sat: selfie
 
 # Test vipster
 vipster: selfie
-	./selfie -c manuscript/code/hello-world.c -o h1.m -s h1.s
-	./selfie -c selfie.c -v 4 -c manuscript/code/hello-world.c -o h2.m -s h2.s
+	# Hello World
+	./selfie -c manuscript/code/hello-world.c -o h1.m
+	./selfie -c selfie.c -v 4 -c manuscript/code/hello-world.c -o h2.m
 	diff -q h1.m h2.m
-	diff -q h1.s h2.s
-	./selfie -c selfie.c -o selfie1.m -s selfie1.s -m 4 -c selfie.c -o selfie2.m -s selfie2.s
+	# Self-Compiling
+	./selfie -c selfie.c -o selfie1.m -m 4 -c selfie.c -o selfie2.m
 	diff -q selfie1.m selfie2.m
-	diff -q selfie1.s selfie2.s
-	./selfie -c selfie.c -v 4 -c selfie.c -o selfie3.m -s selfie3.s
+	# Self-Compiling with Trace
+	./selfie -c selfie.c -v 4 -c selfie.c -o selfie3.m
 	diff -q selfie1.m selfie3.m
-	diff -q selfie1.s selfie3.s
 
 # Test everything
 all: test sat vipster
