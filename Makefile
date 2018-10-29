@@ -72,6 +72,9 @@ riscv-tools:
 	docker login -u cksystemsteaching
 	docker push cksystemsteaching/riscv-tools
 
+jit: selfie
+	./selfie -c selfie.c -m 10 -c manuscript/code/hello-world.c
+
 # Run everything
 all: compile quine debug replay os vm min mob sat
 

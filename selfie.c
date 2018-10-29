@@ -10129,10 +10129,33 @@ uint64_t selfie() {
   return EXITCODE_NOERROR;
 }
 
+void overwrite_myself() {
+  uint64_t i;
+  uint64_t* p;
+
+  p = ELF_ENTRY_POINT;
+
+  i = 0;
+  while (i < binary_length / SIZEOFUINT64) {
+    *(p + i) = *(binary + i);
+
+    i = i + 1;
+  }
+}
+
+
 uint64_t main(uint64_t argc, uint64_t* argv) {
+  uint64_t (*s)();
+
   init_selfie((uint64_t) argc, (uint64_t*) argv);
 
   init_library();
 
-  return selfie();
+  selfie();
+
+  overwrite_myself();
+
+  s = ELF_ENTRY_POINT;
+
+  return s();
 }
