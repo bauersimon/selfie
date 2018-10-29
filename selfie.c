@@ -495,6 +495,7 @@ uint64_t PROCEDURE = 4;
 uint64_t UINT64_T     = 1;
 uint64_t UINT64STAR_T = 2;
 uint64_t VOID_T       = 3;
+uint64_t VOIDSTART_T  = 4;
 
 // symbol tables
 uint64_t GLOBAL_TABLE  = 1;
@@ -2933,10 +2934,13 @@ uint64_t* get_scoped_symbol_table_entry(uint64_t* string, uint64_t class) {
   if (class == VARIABLE)
     // local variables override global variables
     entry = search_symbol_table(local_symbol_table, string, VARIABLE);
-  else if (class == PROCEDURE)
+  else if (class == PROCEDURE) {
     // library procedures override declared or defined procedures
     entry = search_symbol_table(library_symbol_table, string, PROCEDURE);
-  else
+    entry = search_symbol_table(local_symbol_table, string, VARIABLE);
+    if (get_type(entry) != VOIDSTART_T)
+      entry = (uint64_t*) 0;
+  } else
     entry = (uint64_t*) 0;
 
   if (entry == (uint64_t*) 0)
@@ -3394,6 +3398,14 @@ uint64_t help_call_codegen(uint64_t* entry, uint64_t* procedure) {
 
   } else {
     type = get_type(entry);
+
+    if(type == VOIDSTART_T) {
+      load_variable_or_big_int(get_string(entry), VARIABLE);
+      emit_jal(REG_RA, current_temporary());
+
+      tfree(1);
+      return type;
+    }
 
     if (get_address(entry) == 0) {
       // procedure declared but never called nor defined
@@ -4279,6 +4291,39 @@ void compile_variable(uint64_t offset) {
     create_symbol_table_entry(LOCAL_TABLE, identifier, line_number, VARIABLE, type, 0, offset);
 
     get_symbol();
+  } else if (symbol == SYM_LPARENTHESIS) {
+    // function pointer
+    // type (*identifier)();
+    get_symbol();
+
+    if (symbol == SYM_ASTERISK) {
+      get_symbol();
+
+      if (symbol == SYM_IDENTIFIER) {
+        // TODO: enable void type
+        create_symbol_table_entry(LOCAL_TABLE, identifier, line_number, VARIABLE, VOIDSTART_T, 0, offset);
+
+        get_symbol();
+
+        if (symbol == SYM_RPARENTHESIS) {
+          get_symbol();
+
+          if(symbol == SYM_LPARENTHESIS) {
+            get_symbol();
+
+            if (symbol == SYM_RPARENTHESIS) {
+              get_symbol();
+            } else
+              syntax_error_symbol(SYM_RPARENTHESIS);
+          } else
+            syntax_error_symbol(SYM_LPARENTHESIS);
+        } else
+          syntax_error_symbol(SYM_RPARENTHESIS);
+      } else
+        syntax_error_symbol(SYM_IDENTIFIER);
+    } else 
+      syntax_error_symbol(SYM_ASTERISK);
+
   } else {
     syntax_error_symbol(SYM_IDENTIFIER);
 
