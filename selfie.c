@@ -3404,7 +3404,7 @@ uint64_t help_call_codegen(uint64_t* entry, uint64_t* procedure) {
 
     if(type == VOIDSTART_T) {
       load_variable_or_big_int(get_string(entry), VARIABLE);
-      emit_jal(REG_RA, current_temporary());
+      emit_jalr(REG_RA, current_temporary(), 0);
 
       tfree(1);
       return type;
