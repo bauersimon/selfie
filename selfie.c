@@ -2937,9 +2937,12 @@ uint64_t* get_scoped_symbol_table_entry(uint64_t* string, uint64_t class) {
   else if (class == PROCEDURE) {
     // library procedures override declared or defined procedures
     entry = search_symbol_table(library_symbol_table, string, PROCEDURE);
-    entry = search_symbol_table(local_symbol_table, string, VARIABLE);
-    if (get_type(entry) != VOIDSTART_T)
-      entry = (uint64_t*) 0;
+    if (entry == (uint64_t*) 0) {
+      entry = search_symbol_table(local_symbol_table, string, VARIABLE);
+      if (entry != (uint64_t*) 0)
+        if (get_type(entry) != VOIDSTART_T)
+          entry = (uint64_t*) 0;
+    }
   } else
     entry = (uint64_t*) 0;
 
