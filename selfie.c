@@ -1522,6 +1522,7 @@ uint64_t handle_exception(uint64_t* context);
 
 uint64_t mipster(uint64_t* to_context);
 uint64_t hypster(uint64_t* to_context);
+uint64_t jitster(uint64_t* to_context);
 
 uint64_t mixter(uint64_t* to_context, uint64_t mix);
 
@@ -1572,6 +1573,7 @@ uint64_t MINSTER = 5;
 uint64_t MOBSTER = 6;
 
 uint64_t HYPSTER = 7;
+uint64_t JITSTER = 8;
 
 // ------------------------ GLOBAL VARIABLES -----------------------
 
@@ -4655,8 +4657,8 @@ void emit_program_entry() {
   i = 0;
 
   // allocate space for machine initialization code,
-  // emit exactly 20 NOPs with source code line 1
-  while (i < 20) {
+  // emit exactly 24 NOPs with source code line 1
+  while (i < 24) {
     emit_nop();
 
     i = i + 1;
@@ -4693,13 +4695,19 @@ void emit_bootstrapping() {
   // reset code emission to program entry
   binary_length = 0;
 
-  // assert: emitting no more than 20 instructions
+  // assert: emitting no more than 24 instructions
 
   if (report_undefined_procedures()) {
     // if there are undefined procedures just exit
     // by loading exit code 0 into return register
     emit_addi(REG_A0, REG_ZR, 0);
   } else {
+    // enable jitster to offset gp afterwards
+    emit_addi(REG_GP, REG_ZR, 0);
+    emit_nop();
+    emit_nop();
+    emit_nop();
+    
     // avoid sign extension that would result in an additional sub instruction
     if (gp < two_to_the_power_of(31) - two_to_the_power_of(11))
       // assert: generates no more than two instructions
@@ -4711,7 +4719,7 @@ void emit_bootstrapping() {
     }
 
     // initialize global pointer
-    emit_addi(REG_GP, current_temporary(), 0);
+    emit_add(REG_GP, current_temporary(), REG_GP);
 
     tfree(1);
 
@@ -9396,6 +9404,29 @@ uint64_t hypster(uint64_t* to_context) {
   }
 }
 
+uint64_t jitster(uint64_t* to_context) {
+  uint64_t (*s)();
+
+  print((uint64_t*) "jitster");
+  println();
+  
+  binary = tlb(get_pt(to_context), ELF_ENTRY_POINT);
+  binary_length = 0;
+  
+  // // TODO: offset GP
+  // // TODO: make sure paging doesn't mess the binary up
+  
+  print((uint64_t*) "jumping to binary position: ");
+  print_hexadecimal((uint64_t) binary, SIZEOFUINT64);
+  println();
+
+  s = binary;
+  // s();
+  
+  // TODO: exchange exit calls in the binary
+  return 0;
+}
+
 uint64_t mixter(uint64_t* to_context, uint64_t mix) {
   // works with mipsters and hypsters
   uint64_t mslice;
@@ -9689,6 +9720,12 @@ uint64_t selfie_run(uint64_t machine) {
       exit_code = mipster(current_context);
     else
       exit_code = hypster(current_context);
+  else if (machine == JITSTER)
+    if (is_boot_level_zero())
+      // no jitster on boot level zero
+      exit_code = mipster(current_context);
+    else
+      exit_code = jitster(current_context);
   else
     // change 0 to anywhere between 0% to 100% mipster
     exit_code = mixter(current_context, 0);
@@ -10114,6 +10151,8 @@ uint64_t selfie() {
         return selfie_run(MONSTER);
       else if (string_compare(option, (uint64_t*) "-y"))
         return selfie_run(HYPSTER);
+      else if (string_compare(option, (uint64_t*) "-j"))
+        return selfie_run(JITSTER);
       else if (string_compare(option, (uint64_t*) "-min"))
         return selfie_run(MINSTER);
       else if (string_compare(option, (uint64_t*) "-mob"))
@@ -10129,33 +10168,10 @@ uint64_t selfie() {
   return EXITCODE_NOERROR;
 }
 
-void overwrite_myself() {
-  uint64_t i;
-  uint64_t* p;
-
-  p = ELF_ENTRY_POINT;
-
-  i = 0;
-  while (i < binary_length / SIZEOFUINT64) {
-    *(p + i) = *(binary + i);
-
-    i = i + 1;
-  }
-}
-
-
 uint64_t main(uint64_t argc, uint64_t* argv) {
-  uint64_t (*s)();
-
   init_selfie((uint64_t) argc, (uint64_t*) argv);
 
   init_library();
 
-  selfie();
-
-  overwrite_myself();
-
-  s = ELF_ENTRY_POINT;
-
-  return s();
+  return selfie();
 }
