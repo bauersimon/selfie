@@ -72,6 +72,11 @@ riscv-tools:
 	docker login -u cksystemsteaching
 	docker push cksystemsteaching/riscv-tools
 
+riscutils: selfie
+	./selfie -c selfie.c -s selfie1.s -o selfie.m
+	python3 riscutils.py selfie.m >> selfie2.s
+	diff -i selfie1.s selfie2.s
+
 # Run everything
 all: compile quine debug replay os vm min mob sat
 
