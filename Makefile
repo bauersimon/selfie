@@ -6,7 +6,7 @@ selfie: selfie.c
 	$(CC) $(CFLAGS) $< -o $@
 
 # Consider these targets as targets, not files
-.PHONY : compile quine escape debug replay os vm min mob sat spike riscv-tools all clean
+.PHONY : compile quine escape debug replay os vm min mob sat spike riscv-tools riscutils all clean
 
 # Self-compile
 compile: selfie
@@ -73,9 +73,11 @@ riscv-tools:
 	docker push cksystemsteaching/riscv-tools
 
 riscutils: selfie
-	./selfie -c selfie.c -s selfie1.s -o selfie.m
-	python3 riscutils.py selfie.m >> selfie2.s
-	diff -i selfie1.s selfie2.s
+	./selfie -c selfie.c -s selfie.s -o selfie.m
+	python3 riscutils.py selfie.m from_binary.s
+	python3 riscutils.py selfie.s from_assembly.s
+	diff -q selfie.s from_binary.s
+	diff -q selfie.s from_assembly.s
 
 # Run everything
 all: compile quine debug replay os vm min mob sat
